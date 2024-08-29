@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { backend } from 'declarations/backend';
 import { Container, Typography, TextField, Button, Slider, Box, CircularProgress, List, ListItem, ListItemText, IconButton } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-
-ChartJS.register(ArcElement, Tooltip, Legend);
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 
 interface Person {
   id: number;
-  name: string;
   percentage: number;
   amount: number;
 }
@@ -17,9 +13,7 @@ interface Person {
 const App: React.FC = () => {
   const [billTotal, setBillTotal] = useState<number>(0);
   const [people, setPeople] = useState<Person[]>([]);
-  const [newPersonName, setNewPersonName] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [remaining, setRemaining] = useState<number>(100);
 
   useEffect(() => {
     fetchBillSplit();
@@ -33,11 +27,9 @@ const App: React.FC = () => {
         setBillTotal(Number(result.total));
         setPeople(result.people.map(p => ({
           id: Number(p[0]),
-          name: p[1],
-          percentage: Number(p[2]),
-          amount: Number(p[3])
+          percentage: Number(p[1]),
+          amount: Number(p[2])
         })));
-        setRemaining(Number(result.remaining));
       }
     } catch (error) {
       console.error('Error fetching bill split:', error);
@@ -57,11 +49,9 @@ const App: React.FC = () => {
   };
 
   const handleAddPerson = async () => {
-    if (newPersonName.trim() === '') return;
     setLoading(true);
     try {
-      await backend.addPerson(newPersonName);
-      setNewPersonName('');
+      await backend.addPerson();
       await fetchBillSplit();
     } catch (error) {
       console.error('Error adding person:', error);
@@ -89,23 +79,6 @@ const App: React.FC = () => {
     }
   };
 
-  const chartData = {
-    labels: people.map(p => p.name),
-    datasets: [
-      {
-        data: people.map(p => p.percentage),
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56',
-          '#4BC0C0',
-          '#9966FF',
-          '#FF9F40'
-        ]
-      }
-    ]
-  };
-
   return (
     <Container maxWidth="md">
       <Typography variant="h2" component="h1" gutterBottom>
@@ -125,22 +98,18 @@ const App: React.FC = () => {
         </Button>
       </Box>
       <Box mb={4}>
-        <TextField
-          label="New Person Name"
-          value={newPersonName}
-          onChange={(e) => setNewPersonName(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <Button variant="contained" color="secondary" onClick={handleAddPerson}>
+        <Typography variant="h6" gutterBottom>
+          Number of People: {people.length}
+        </Typography>
+        <Button variant="contained" color="secondary" onClick={handleAddPerson} startIcon={<AddIcon />}>
           Add Person
         </Button>
       </Box>
       <List>
-        {people.map((person) => (
+        {people.map((person, index) => (
           <ListItem key={person.id}>
             <ListItemText
-              primary={person.name}
+              primary={`Person ${index + 1}`}
               secondary={`${person.percentage.toFixed(2)}% - $${person.amount.toFixed(2)}`}
             />
             <Slider
@@ -148,24 +117,16 @@ const App: React.FC = () => {
               onChange={(_, value) => handleUpdatePercentage(person.id, Number(value))}
               min={0}
               max={100}
-              step={0.1}
+              step={1}
               valueLabelDisplay="auto"
               style={{ width: '200px', marginRight: '20px' }}
             />
             <IconButton edge="end" aria-label="delete" onClick={() => handleRemovePerson(person.id)}>
-              <DeleteIcon />
+              <RemoveIcon />
             </IconButton>
           </ListItem>
         ))}
       </List>
-      <Box mb={4}>
-        <Typography variant="h6" gutterBottom>
-          Remaining: {remaining.toFixed(2)}%
-        </Typography>
-      </Box>
-      <Box mb={4} style={{ height: '300px' }}>
-        <Pie data={chartData} options={{ maintainAspectRatio: false }} />
-      </Box>
       {loading && (
         <Box display="flex" justifyContent="center">
           <CircularProgress />

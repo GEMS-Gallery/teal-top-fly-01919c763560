@@ -3,16 +3,10 @@ import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
 export interface _SERVICE {
-  'addPerson' : ActorMethod<[string], bigint>,
+  'addPerson' : ActorMethod<[], bigint>,
   'getBillSplit' : ActorMethod<
     [],
-    [] | [
-      {
-        'total' : number,
-        'people' : Array<[bigint, string, number, number]>,
-        'remaining' : number,
-      }
-    ]
+    [] | [{ 'total' : number, 'people' : Array<[bigint, number, number]> }]
   >,
   'removePerson' : ActorMethod<[bigint], boolean>,
   'setBillTotal' : ActorMethod<[number], undefined>,
