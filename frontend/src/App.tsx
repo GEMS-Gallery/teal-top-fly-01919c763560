@@ -81,14 +81,12 @@ const App: React.FC = () => {
   };
 
   const handleUpdatePercentage = async (id: number, percentage: number) => {
-    setLoading(true);
     try {
       await backend.updatePercentage(id, percentage);
       await fetchBillSplit();
     } catch (error) {
       console.error('Error updating percentage:', error);
     }
-    setLoading(false);
   };
 
   const chartData = {
